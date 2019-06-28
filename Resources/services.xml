@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="endereco_ams.subscriber.frontend"
+                 class="EnderecoAMS\Subscriber\Frontend">
+            <argument>%endereco_ams.plugin_dir%</argument>
+            <argument type="service" id="endereco_ams.components.accounting" />
+            <tag name="shopware.event_subscriber"/>
+        </service>
+        <service id="endereco_ams.components.accounting"
+                 class="EnderecoAMS\Components\Accounting">
+            <argument>%endereco_ams.plugin_dir%</argument>
+            <tag name="endereco_ams.components.accounting"/>
+        </service>
+    </services>
+</container>

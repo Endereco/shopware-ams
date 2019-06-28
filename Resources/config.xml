@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.3/engine/Shopware/Components/Plugin/schema/config.xsd">
+    <elements>
+        <element type="text" scope="locale">
+            <name>enderecoApiKey</name>
+            <label lang="de">Zugriffsschlüssel (kann man bei info@endereco.de anfordern)</label>
+            <label lang="en">API-Key (you get it from info@endereco.de)</label>
+            <description lang="de">Zugriffsschlüssel für die Endereco Schnittstelle.</description>
+            <description lang="en">Access key for the Endereco API.</description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUseStatus</name>
+            <label lang="de">Statusanzeige</label>
+            <label lang="en">Status indicator</label>
+            <value>true</value>
+            <description lang="de">Zeigt den Prüf-Status für die eingegebenen Daten an. Wenn deaktiviert, werden weder Warnung- noch Erfolgszeichen angezeigt. </description>
+            <description lang="en">Choose whether you want to display status for the data inserted or not. When deactivated, neither warning nor success sign will be displayed. </description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUsePostcodeAutocomplete</name>
+            <label lang="de">PLZ-Vervollständigung</label>
+            <label lang="en">Postcode Autocomplete</label>
+            <value>true</value>
+            <description lang="de">Aktiviert Vorschläge für PLZ und den zugehörigen Ort.(Suggest) Ein ausgewählter Datensatz wird in die entsprechenden Adressfelder übernommen. </description>
+            <description lang="en">While activated, this service provides the user with a postcode and related city name suggestions upon typed digits. Selected data will be automatically populated into the corresponding address fields. </description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUseCitynameAutocomplete</name>
+            <label lang="de">Ortsname-Vervollständigung</label>
+            <label lang="en">Cityname Autocomplete</label>
+            <value>true</value>
+            <description lang="de">Aktiviert Vorschläge für Ort und die zugehörige PLZ.(Suggest) Ein ausgewählter Datensatz wird in die entsprechenden Adressfelder übernommen.</description>
+            <description lang="en">While activated, this service provides the user with a postcode and related city name suggestions upon inserted letters. Selected data will be automatically populated into the corresponding address fields. </description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUseStreetAutocomplete</name>
+            <label lang="de">Straßenname-Vervollständigung</label>
+            <label lang="en">Street Autocomplete</label>
+            <value>true</value>
+            <description lang="de">Aktiviert Vorschläge für Straßennamen (Suggest). Diese werden für die ausgewählte Kombination aus Land und Ort zurückgeliefert. Ein ausgewählter Datensatz wird in die entsprechenden Adressfelder übernommen. </description>
+            <description lang="en">While activated, this service provides the user with a street name suggestions upon inserted letters, available for chosen Postcode + City combination.</description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUseEmailCheck</name>
+            <label lang="de">eMail-Prüfung</label>
+            <label lang="en">E-Mail Check</label>
+            <value>true</value>
+            <description lang="de">Dieser Dienst überprüft die Syntax, Zustellbarkeit und Existenz eingegebener eMail-Adresse. </description>
+            <description lang="en">While activated, eMail Check verifies the syntax, availability and deliverability of an entered eMail Address. It also checks whether it is a one-time or spam eMail Address. </description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUseNameCheck</name>
+            <label lang="de">Anrede-Prüfung</label>
+            <label lang="en">Salutation Check</label>
+            <value>true</value>
+            <description lang="de">Dieser Dienst überprüft, ob die gewählte Anrede zu dem Vornamen passt. Es wird auch Klein- und Großschreibung korrigiert.</description>
+            <description lang="en">While activated, this service verifies whether chosen salutation corresponds to the first name. It is also corrects small and capital letters </description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUsePrephoneCheck</name>
+            <label lang="de">Vorwahl-Prüfung (Nummerformatierung)</label>
+            <label lang="en">Area code Check (formatting)</label>
+            <value>true</value>
+            <description lang="de">Dieser Dienst prüft, ob die Vorwahl existiert und formatiert die Nummern nach dem gewählten Format.</description>
+            <description lang="en">White activated, this service verifies whether an inserted area code exists and formats the number in accordance to chosen format. </description>
+        </element>
+
+        <element type="select" scope="locale">
+            <name>enderecoUsePrephoneFormat</name>
+            <label lang="de">Nummer-Formatierung:</label>
+            <label lang="en">Phone Format</label>
+            <value>8</value>
+            <description lang="de">Dieser Dienst konvertiert die Telefonnummern ein gewünschtes Format. </description>
+            <description lang="en">This service converts inserted telephone number according to the chosen format.</description>
+            <store>
+                <option>
+                    <value>0</value>
+                    <label lang="de">wie Eingabe</label>
+                    <label lang="en">as entered</label>
+                </option>
+                <option>
+                    <value>1</value>
+                    <label lang="de">nationale Rufnummer nur Zahlen</label>
+                    <label lang="en">national telephone numbers, only Digits</label>
+                </option>
+                <option>
+                    <value>2</value>
+                    <label lang="de">nationale Rufnummer, / als Trennzeichen</label>
+                    <label lang="en">national telephone numbers, / as a Divider</label>
+                </option>
+                <option>
+                    <value>3</value>
+                    <label lang="de">nationale Rufnummer, - als Trennzeichen</label>
+                    <label lang="en">national telephone numbers, - as a Divider</label>
+                </option>
+                <option>
+                    <value>4</value>
+                    <label lang="de">nationale Rufnummer nach DIN 5008</label>
+                    <label lang="en">national telephone numbers in accordance with DIN 5008</label>
+                </option>
+                <option>
+                    <value>5</value>
+                    <label lang="de">nationale Rufnummer nach E.123</label>
+                    <label lang="en">national telephone numbers in accordance with E.123</label>
+                </option>
+                <option>
+                    <value>6</value>
+                    <label lang="de">internationale Rufnummer nur Zahlen</label>
+                    <label lang="en">international telephone numbers, only Digits</label>
+                </option>
+                <option>
+                    <value>7</value>
+                    <label lang="de">internationale Rufnummer, - als Trennzeichen</label>
+                    <label lang="en">international telephone numbers, - as a Divider</label>
+                </option>
+                <option>
+                    <value>8</value>
+                    <label lang="de">internationale Rufnummer nach DIN 5008</label>
+                    <label lang="en">international telephone numbers in accordance with DIN 5008</label>
+                </option>
+                <option>
+                    <value>9</value>
+                    <label lang="de">internationale Rufnummer nach E.123</label>
+                    <label lang="en">international telephone numbers in accordance with E.123</label>
+                </option>
+            </store>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>enderecoUseAddressCheck</name>
+            <label lang="de">Adress-Prüfung</label>
+            <label lang="en">Adress Check</label>
+            <value>true</value>
+            <description lang="de">Dieser Dienst prüft die eingegebene Adresse. Bei Fehlern zeigt die Adress-Prüfung eine Reihe von korrekturvorschlägen an, aus denen der Nutzer wählen kann.</description>
+            <description lang="en">Test.</description>
+        </element>
+
+        <element type="color">
+            <name>enderecoUseprimaryColor</name>
+            <label lang="de">Hauptfarbe (default)</label>
+            <label lang="en">Main color (default)</label>
+            <value>#fa5d27</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUseprimaryColorHover</name>
+            <label lang="de">Hauptfarbe (hover)</label>
+            <label lang="en">Main color (hover)</label>
+            <value>#d9400b</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUseprimaryColorText</name>
+            <label lang="de">Hauptfarbe (text)</label>
+            <label lang="en">Main color (text)</label>
+            <value>#ffffff</value>
+        </element>
+
+
+        <element type="color">
+            <name>enderecoUsesecondaryColor</name>
+            <label lang="de">Sekundärfarbe (default)</label>
+            <label lang="en">Secondary color (default)</label>
+            <value>#fc6621</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsesecondaryColorHover</name>
+            <label lang="de">Sekundärfarbe (hover)</label>
+            <label lang="en">Secondary color (hover)</label>
+            <value>#fc6621</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsesecondaryColorText</name>
+            <label lang="de">Sekundärfarbe (text)</label>
+            <label lang="en">Secondary color (text)</label>
+            <value>#ffffff</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsewarningColor</name>
+            <label lang="de">Farbe für Hinweise (default)</label>
+            <label lang="en">Color for warning (default)</label>
+            <value>#f0ad4e</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsewarningColorHover</name>
+            <label lang="de">Farbe für Hinweise (hover)</label>
+            <label lang="en">Color for warning (hover)</label>
+            <value>#eea236</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsewarningColorText</name>
+            <label lang="de">Farbe für Hinweise (text)</label>
+            <label lang="en">Color for warning (text)</label>
+            <value>#ffffff</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsesuccessColor</name>
+            <label lang="de">Farbe für korrekte Daten (default)</label>
+            <label lang="en">Color for success (default)</label>
+            <value>#5cb85c</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsesuccessColorHover</name>
+            <label lang="de">Farbe für korrekte Daten (hover)</label>
+            <label lang="en">Color for success (hover)</label>
+            <value>#4cae4c</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUsesuccessColorText</name>
+            <label lang="de">Farbe für korrekte Daten (text)</label>
+            <label lang="en">Color for success (text)</label>
+            <value>#ffffff</value>
+        </element>
+    </elements>
+
+</config>

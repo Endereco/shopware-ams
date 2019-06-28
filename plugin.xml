@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.3/engine/Shopware/Components/Plugin/schema/plugin.xsd">
+
+    <label lang="en">EnderecoAMS</label>
+    <label lang="de">EnderecoAMS</label>
+
+    <version>2.2</version>
+
+    <copyright>(c) Endereco UG (haftungsbeschränkt)</copyright>
+
+    <author>Endereco UG (haftungsbeschränkt)</author>
+
+    <license></license>
+
+    <compatibility minVersion="5.3.0" />
+
+    <changelog version="2.2">
+        <changes lang="en">
+            <![CDATA[
+        First release Shopware Community Store
+        ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+        Erstveröffentlichung Shopware Community Store
+        ]]>
+        </changes>
+    </changelog>
+
+    <description lang="en">
+    </description>
+
+    <description lang="de">
+    </description>
+</plugin>

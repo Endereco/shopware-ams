@@ -1,0 +1,15 @@
+.register--street,
+div.address--street {
+    display: none !important;
+}
+
+.register--content .register--field-streetname {
+    float: left;
+    width: 78%;
+    margin-right: 2%;
+}
+
+.register--content .register--field-streetnumber {
+    float: left;
+    width: 20%;
+}
