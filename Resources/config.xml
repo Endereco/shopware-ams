@@ -10,6 +10,31 @@
             <description lang="en">Access key for the Endereco API.</description>
         </element>
 
+        <element type="button">
+            <name>buttonConfigTest</name>
+            <label lang="de">Konfigurationstest</label>
+            <label lang="en">Config Test</label>
+            <options>
+                <handler>
+                    <![CDATA[
+                    function() {
+                      Ext.Ajax.request({
+                        url: 'EnderecoMain/testApiConfig',
+                        success: function (response) {
+                          var responseO = JSON.parse(response.responseText)
+                          Shopware.Msg.createGrowlMessage(response.statusText, responseO.response)
+                        },
+                        failure: function (response) {
+                          var responseO = JSON.parse(response.responseText)
+                          Shopware.Msg.createGrowlMessage(response.statusText, responseO.response)
+                        }
+                      });
+                    }
+                    ]]>
+                </handler>
+            </options>
+        </element>
+
         <element type="boolean" scope="locale">
             <name>enderecoUseStatus</name>
             <label lang="de">Statusanzeige</label>
@@ -19,36 +44,55 @@
             <description lang="en">Choose whether you want to display status for the data inserted or not. When deactivated, neither warning nor success sign will be displayed. </description>
         </element>
 
-        <element type="boolean" scope="locale">
-            <name>enderecoUsePostcodeAutocomplete</name>
-            <label lang="de">PLZ-Vervollständigung</label>
-            <label lang="en">Postcode Autocomplete</label>
-            <value>true</value>
-            <description lang="de">Aktiviert Vorschläge für PLZ und den zugehörigen Ort.(Suggest) Ein ausgewählter Datensatz wird in die entsprechenden Adressfelder übernommen. </description>
-            <description lang="en">While activated, this service provides the user with a postcode and related city name suggestions upon typed digits. Selected data will be automatically populated into the corresponding address fields. </description>
+        <element type="color">
+            <name>enderecoUsewarningColor</name>
+            <label lang="de">Farbe für Hinweise (default)</label>
+            <label lang="en">Color for warning (default)</label>
+            <value>#f0ad4e</value>
         </element>
 
-        <element type="boolean" scope="locale">
-            <name>enderecoUseCitynameAutocomplete</name>
-            <label lang="de">Ortsname-Vervollständigung</label>
-            <label lang="en">Cityname Autocomplete</label>
-            <value>true</value>
-            <description lang="de">Aktiviert Vorschläge für Ort und die zugehörige PLZ.(Suggest) Ein ausgewählter Datensatz wird in die entsprechenden Adressfelder übernommen.</description>
-            <description lang="en">While activated, this service provides the user with a postcode and related city name suggestions upon inserted letters. Selected data will be automatically populated into the corresponding address fields. </description>
+        <element type="color">
+            <name>enderecoUsesuccessColor</name>
+            <label lang="de">Farbe für korrekte Daten (default)</label>
+            <label lang="en">Color for success (default)</label>
+            <value>#5cb85c</value>
         </element>
 
+
         <element type="boolean" scope="locale">
-            <name>enderecoUseStreetAutocomplete</name>
-            <label lang="de">Straßenname-Vervollständigung</label>
-            <label lang="en">Street Autocomplete</label>
+            <name>enderecoUseAddressServices</name>
+            <label lang="de">Eingabehilfe und Adressprüfung</label>
+            <label lang="en">Inputassistant and Addresscheck</label>
             <value>true</value>
-            <description lang="de">Aktiviert Vorschläge für Straßennamen (Suggest). Diese werden für die ausgewählte Kombination aus Land und Ort zurückgeliefert. Ein ausgewählter Datensatz wird in die entsprechenden Adressfelder übernommen. </description>
-            <description lang="en">While activated, this service provides the user with a street name suggestions upon inserted letters, available for chosen Postcode + City combination.</description>
+            <description lang="de">Aktiviert die Unterstützung der Eingabe durch Vorschläge und die Prüfung der eingegebenen Adresse.</description>
+            <description lang="en">Activates address input assistant and address checks.</description>
+        </element>
+
+        <element type="color">
+            <name>enderecoUseprimaryColor</name>
+            <label lang="de">Hauptfarbe (default)</label>
+            <label lang="en">Main color (default)</label>
+            <value>#fa5d27</value>
+        </element>
+
+        <element type="color">
+            <name>enderecoUseprimaryColorHover</name>
+            <label lang="de">Hauptfarbe (hover)</label>
+            <label lang="en">Main color (hover)</label>
+            <value>#d9400b</value>
+        </element>
+
+
+        <element type="color">
+            <name>enderecoUsesecondaryColor</name>
+            <label lang="de">Dropdown Auswahl Farbe</label>
+            <label lang="en">Dropdown selection color</label>
+            <value>#d9400b</value>
         </element>
 
         <element type="boolean" scope="locale">
             <name>enderecoUseEmailCheck</name>
-            <label lang="de">eMail-Prüfung</label>
+            <label lang="de">E-Mail-Prüfung</label>
             <label lang="en">E-Mail Check</label>
             <value>true</value>
             <description lang="de">Dieser Dienst überprüft die Syntax, Zustellbarkeit und Existenz eingegebener eMail-Adresse. </description>
@@ -132,100 +176,6 @@
                     <label lang="en">international telephone numbers in accordance with E.123</label>
                 </option>
             </store>
-        </element>
-
-        <element type="boolean" scope="locale">
-            <name>enderecoUseAddressCheck</name>
-            <label lang="de">Adress-Prüfung</label>
-            <label lang="en">Adress Check</label>
-            <value>true</value>
-            <description lang="de">Dieser Dienst prüft die eingegebene Adresse. Bei Fehlern zeigt die Adress-Prüfung eine Reihe von korrekturvorschlägen an, aus denen der Nutzer wählen kann.</description>
-            <description lang="en">Test.</description>
-        </element>
-
-        <element type="color">
-            <name>enderecoUseprimaryColor</name>
-            <label lang="de">Hauptfarbe (default)</label>
-            <label lang="en">Main color (default)</label>
-            <value>#fa5d27</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUseprimaryColorHover</name>
-            <label lang="de">Hauptfarbe (hover)</label>
-            <label lang="en">Main color (hover)</label>
-            <value>#d9400b</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUseprimaryColorText</name>
-            <label lang="de">Hauptfarbe (text)</label>
-            <label lang="en">Main color (text)</label>
-            <value>#ffffff</value>
-        </element>
-
-
-        <element type="color">
-            <name>enderecoUsesecondaryColor</name>
-            <label lang="de">Sekundärfarbe (default)</label>
-            <label lang="en">Secondary color (default)</label>
-            <value>#fc6621</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsesecondaryColorHover</name>
-            <label lang="de">Sekundärfarbe (hover)</label>
-            <label lang="en">Secondary color (hover)</label>
-            <value>#fc6621</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsesecondaryColorText</name>
-            <label lang="de">Sekundärfarbe (text)</label>
-            <label lang="en">Secondary color (text)</label>
-            <value>#ffffff</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsewarningColor</name>
-            <label lang="de">Farbe für Hinweise (default)</label>
-            <label lang="en">Color for warning (default)</label>
-            <value>#f0ad4e</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsewarningColorHover</name>
-            <label lang="de">Farbe für Hinweise (hover)</label>
-            <label lang="en">Color for warning (hover)</label>
-            <value>#eea236</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsewarningColorText</name>
-            <label lang="de">Farbe für Hinweise (text)</label>
-            <label lang="en">Color for warning (text)</label>
-            <value>#ffffff</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsesuccessColor</name>
-            <label lang="de">Farbe für korrekte Daten (default)</label>
-            <label lang="en">Color for success (default)</label>
-            <value>#5cb85c</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsesuccessColorHover</name>
-            <label lang="de">Farbe für korrekte Daten (hover)</label>
-            <label lang="en">Color for success (hover)</label>
-            <value>#4cae4c</value>
-        </element>
-
-        <element type="color">
-            <name>enderecoUsesuccessColorText</name>
-            <label lang="de">Farbe für korrekte Daten (text)</label>
-            <label lang="en">Color for success (text)</label>
-            <value>#ffffff</value>
         </element>
     </elements>
 

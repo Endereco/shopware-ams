@@ -5,7 +5,7 @@
     <label lang="en">EnderecoAMS</label>
     <label lang="de">EnderecoAMS</label>
 
-    <version>2.2</version>
+    <version>2.2.2</version>
 
     <copyright>(c) Endereco UG (haftungsbeschränkt)</copyright>
 
@@ -15,7 +15,33 @@
 
     <compatibility minVersion="5.3.0" />
 
-    <changelog version="2.2">
+    <changelog version="2.2.2">
+        <changes lang="en">
+            <![CDATA[
+            Beseitigt den Bug mit falschem Namespace in register index Datei.l
+        ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+            Fixed bug with wrong namespace.
+        ]]>
+        </changes>
+    </changelog>
+
+    <changelog version="2.2.1">
+        <changes lang="en">
+            <![CDATA[
+        Updated JS-SDK
+        ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+        JS-SDK Aktualisiert
+        ]]>
+        </changes>
+    </changelog>
+
+    <changelog version="2.2.0">
         <changes lang="en">
             <![CDATA[
         First release Shopware Community Store

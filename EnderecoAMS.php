@@ -9,6 +9,7 @@ use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
+use Shopware\Components\Plugin\Context\UpdateContext;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class EnderecoAMS extends Plugin
@@ -36,4 +37,9 @@ class EnderecoAMS extends Plugin
 	{
 		$uninstallContext->scheduleClearCache(UninstallContext::CACHE_LIST_ALL);
 	}
+
+    public function update(UpdateContext $updateContext)
+    {
+        $updateContext->scheduleClearCache(UpdateContext::CACHE_LIST_ALL);
+    }
 }

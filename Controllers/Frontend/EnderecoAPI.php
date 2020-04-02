@@ -12,6 +12,7 @@ class Shopware_Controllers_Frontend_EnderecoAPI extends \Enlight_Controller_Acti
 		// Get settings.
 		$config = $this->container->get('config');
 		$apiKey = $config->get('enderecoApiKey');
+        $agentInfo = "Endereco Shopware Client v2.2.1";
 
 		Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
 		$postData = $this->request->getRawBody();
@@ -57,6 +58,7 @@ class Shopware_Controllers_Frontend_EnderecoAPI extends \Enlight_Controller_Acti
 				'X-Auth-Key: ' . $apiKey,
 				'X-Transaction-Id: ' . $tid,
 				'X-Transaction-Referer: ' . $_SERVER['HTTP_X_TRANSACTION_REFERER'],
+				'X-Agent: ' . $agentInfo,
 				'Content-Length: ' . strlen($dataString))
 		);
 
@@ -75,16 +77,48 @@ class Shopware_Controllers_Frontend_EnderecoAPI extends \Enlight_Controller_Acti
 	}
 
 	public function countryAction() {
-		$countryRepository = $this->container->get('models')->getRepository(\Shopware\Models\Country\Country::class);
-		$countryId = intval($this->request->getParam('id'));
-		echo strtolower($countryRepository->find($countryId)->getIso());
-		die();
+
+        $postData = $this->request->getRawBody();
+        $postData = json_decode($postData, true);
+        $countryRepository = $this->container->get('models')->getRepository(\Shopware\Models\Country\Country::class);
+
+        $returnArray = array();
+
+        foreach ($postData['params']['countryIds'] as $index => $countryId) {
+            $countryId = intval($countryId);
+            if (0 === $countryId) {
+                $returnArray[$index] = "";
+            } else {
+                $returnArray[$index] = strtolower($countryRepository->find($countryId)->getIso());
+            }
+        }
+
+        $responseArray = array(
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => array(
+                'countryCodes' => $returnArray
+            ),
+        );
+
+        $response = $this->Response();
+        $response->setHeader('Content-Type', 'application/json', true);
+        $response->setBody(json_encode($responseArray));
+        $response->sendResponse();
+        die();
 	}
 
 	public function tidAction() {
 		Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
+		$cookies = $_COOKIE;
+		$tids = array();
+		foreach ($cookies as $cookieName => $value) {
+		    if (intval($value)>0 && (strpos($cookieName, 'en_tid_') !== false)) {
+                $tids[] = str_replace('en_tid_', '', $cookieName);
+            }
+        }
 		echo '<pre>';
-        print_r($_COOKIE);
+        print_r($tids);
 		die();
 	}
 

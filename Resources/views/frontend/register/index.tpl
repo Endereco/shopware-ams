@@ -36,10 +36,12 @@
             <input autocomplete="section-billing billing street-address-number"
                    name="register[billing][streetnumber]"
                    type="text"
-                   placeholder="{s name='RegisterPlaceholderStreetNumber' namespace='EnderecoAMS'}Hausnummer{/s}"
+                   required="required"
+                   aria-required="true"
+                   placeholder="{s name='RegisterPlaceholderStreetNumber' namespace='EnderecoAMS'}Hausnummer{/s}{s name="RequiredField" namespace="frontend/register/index"}{/s}"
                    id="billing_streetnumber"
                    value=""
-                   class="register--field register--field-streetnumber register--field-zipcode" />
+                   class="register--field register--field-streetnumber address--field-zipcode is--required" />
         </div>
         <div style="clear: both"></div>
     {/capture}
@@ -116,17 +118,19 @@
                    type="text"
                    required="required"
                    aria-required="true"
-                   placeholder="{s name='RegisterPlaceholderStreetName' namespace='frontend/EnderecoAMS'}Street{/s}{s name='RequiredField' namespace='frontend/register/index'}{/s}"
+                   placeholder="{s name='RegisterPlaceholderStreetName' namespace='EnderecoAMS'}Street{/s}{s name='RequiredField' namespace='frontend/register/index'}{/s}"
                    id="shipping_streetname"
                    value=""
                    class="register--field register--spacer register--field-streetname register--field-city is--required{if isset($error_flags.street)} has--error{/if}" />
             <input autocomplete="section-shipping shipping street-address-number"
                    name="register[shipping][streetnumber]"
                    type="text"
-                   placeholder="{s name='RegisterPlaceholderStreetNumber' namespace='frontend/EnderecoAMS'}Number{/s}"
+                   required="required"
+                   aria-required="true"
+                   placeholder="{s name='RegisterPlaceholderStreetNumber' namespace='EnderecoAMS'}Number{/s}{s name="RequiredField" namespace="frontend/register/index"}{/s}"
                    id="shipping_streetnumber"
                    value=""
-                   class="register--field register--field-streetnumber register--field-zipcode" />
+                   class="register--field register--field-streetnumber address--field-zipcode is--required" />
         </div>
         <div style="clear: both"></div>
     {/capture}

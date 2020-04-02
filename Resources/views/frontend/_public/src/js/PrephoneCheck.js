@@ -1,17 +1,38 @@
 /**
  * Endereco SDK.
  *
- * @author Ilja Weber <ilja.weber@mobilemjo.de>
+ * @author Ilja Weber <ilja@endereco.de>
  * @copyright 2019 mobilemojo – Apps & eCommerce UG (haftungsbeschränkt) & Co. KG
  * {@link https://endereco.de}
  */
 function PrephoneCheck(config) {
-
     var $self  = this;
-    this.isSet = false;
-    this.tid = 'not_set';
-    this.config = config;
-    this.format = config.format;
+
+    /**
+     * Combine object, IE 11 compatible.
+     */
+    this.mergeObjects = function(objects) {
+        return objects.reduce(function (r, o) {
+            Object.keys(o).forEach(function (k) {
+                r[k] = o[k];
+            });
+            return r;
+        }, {})
+    };
+
+    // Includes polyfill for IE
+    if (!Array.prototype.includes) {
+        Object.defineProperty(Array.prototype, "includes", {
+            enumerable: false,
+            value: function(obj) {
+                var newArr = this.filter(function(el) {
+                    return el == obj;
+                });
+                return newArr.length > 0;
+            }
+        });
+    }
+
     this.requestBody = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -21,39 +42,25 @@ function PrephoneCheck(config) {
             "format": 8
         }
     }
-
+    this.defaultConfig = {
+        'useWatcher': true,
+        'referer': 'not_set',
+        'tid': 'not_set'
+    };
+    this.fieldsAreSet = false;
+    this.dirty = false;
+    this.config = $self.mergeObjects([this.defaultConfig, config]);
+    this.format = config.format;
     this.connector = new XMLHttpRequest();
-
-    // Observe the website in a loop.
-    setInterval( function() {
-        var isNowSet = false;
-        if(
-            (null !== document.querySelector(config.inputSelector))
-        ) {
-            isNowSet = true;
-        }
-
-        if (!$self.isSet && isNowSet) {
-            $self.init();
-        } else if($self.isSet && !isNowSet) {
-            $self.isSet = false;
-        }
-    }, 300);
 
     //// Functions
     this.init = function() {
-        console.log('Initiate PrephoneCheck');
-
-        $self.inputElement = document.querySelector(config.inputSelector);
-
-        // Generate TID
-        if (window.accounting) {
-            $self.tid = window.accounting.generateTID();
+        try {
+            $self.inputElement = document.querySelector($self.config.inputSelector);
+        } catch(e) {
+            console.log('Could not initiate PrephoneCheck because of error', e);
+            return;
         }
-
-        // Set mark
-        $self.inputElement.setAttribute('data-service', 'prephoneCheck');
-        $self.inputElement.setAttribute('data-status', 'instantiated');
 
         // Disable browser autocomplete
         if ($self.isChrome()) {
@@ -64,28 +71,41 @@ function PrephoneCheck(config) {
 
         //// Rendering
         $self.inputElement.addEventListener('change', function() {
-            $this = this;
+            var event;
+            var $this = this;
 
             if ('' === $this.value.trim()) {
-                event = new Event('endereco.clean');
+                event = $self.createEvent('endereco.clean');
                 $self.inputElement.dispatchEvent(event);
                 return;
             }
 
-            $self.requestBody.params.prephoneNumber = $this.value.trim();
-            $self.requestBody.params.format = $self.format;
-            $self.connector.abort();
-            $self.inputElement.setAttribute('data-status', 'loading');
-            $self.connector.open('POST', $self.config.endpoint, true);
-            $self.connector.setRequestHeader("Content-type", "application/json");
-            $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
-            $self.connector.setRequestHeader("X-Transaction-Id", $self.tid);
-            $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
+            $self.checkPrephone().then(function($data) {
+                var event;
+                if ($data.result.status.includes('A1000')) {
+                    $self.inputElement.value = $data.result.prephoneNumber;
+                    event = $self.createEvent('endereco.valid');
+                    $self.inputElement.dispatchEvent(event);
+                } else {
+                    event = $self.createEvent('endereco.clean');
+                    $self.inputElement.dispatchEvent(event);
+                }
 
-            $self.connector.send(JSON.stringify($self.requestBody));
+                if ($data.cmd && $data.cmd.use_tid) {
+                    $self.config.tid = $data.cmd.use_tid;
+
+                    if ($self.config.serviceGroup && 0 < $self.config.serviceGroup.length) {
+                        $self.config.serviceGroup.forEach( function(serviceObject) {
+                            serviceObject.updateConfig({'tid': $data.cmd.use_tid});
+                        })
+                    }
+                }
+            });
+
         });
 
-        $self.isSet = true;
+        $self.dirty = false;
+        console.log('PrephoneCheck initiated.');
     }
 
     // Check if the browser is chrome
@@ -93,20 +113,108 @@ function PrephoneCheck(config) {
         return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
     }
 
-    // On data receive
-    this.connector.onreadystatechange = function() {
-        if(4 === $self.connector.readyState) {
-            if ($self.connector.responseText && '' !== $self.connector.responseText) {
-                $data = JSON.parse($self.connector.responseText);
-                if (undefined !== $data.result) {
-                    if ($data.result.status.includes('A1000')) {
-                        $self.inputElement.value = $data.result.prephoneNumber;
-                        event = new Event('endereco.valid');
-                        $self.inputElement.dispatchEvent(event);
+    this.checkPrephone = function() {
+
+        return new Promise(function(resolve, reject) {
+            $self.connector.onreadystatechange = function() {
+                var $data = {};
+                if(4 === $self.connector.readyState) {
+                    if ($self.connector.responseText && '' !== $self.connector.responseText) {
+                        try {
+                            $data = JSON.parse($self.connector.responseText);
+                        } catch(e) {
+                            console.log('Could not parse JSON', e);
+                            reject($data);
+                        }
+
+                        if (undefined !== $data.result) {
+                            resolve($data);
+                        } else {
+                            reject($data);
+                        }
+                    } else {
+                        reject($data);
                     }
                 }
+            };
+
+            /**
+             * Backward compatibility for referer
+             * If not set, it will use the browser url.
+             */
+            if ('not_set' === $self.config.referer) {
+                $self.config.referer = window.location.href;
             }
+
+            $self.requestBody.params.prephoneNumber = $self.inputElement.value.trim();
+            $self.requestBody.params.format = $self.format;
+            $self.connector.open('POST', $self.config.endpoint, true);
+            $self.connector.setRequestHeader("Content-type", "application/json");
+            $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
+            $self.connector.setRequestHeader("X-Transaction-Id", $self.config.tid);
+            $self.connector.setRequestHeader("X-Transaction-Referer", $self.config.referer);
+
+            $self.connector.send(JSON.stringify($self.requestBody));
+        });
+    };
+
+    /**
+     * Helper function creates event that is compatible with IE 11.
+     *
+     * @param eventName
+     * @returns {Event}
+     */
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    };
+
+    /**
+     * Helper function to update existing config, overwriting existing fields.
+     *
+     * @param newConfig
+     */
+    this.updateConfig = function(newConfig) {
+        $self.config = $self.mergeObjects([$self.config, newConfig]);
+    };
+
+    /**
+     * Checks if fields are set.
+     */
+    this.checkIfFieldsAreSet = function() {
+        var areFieldsSet = false;
+        if((null !== document.querySelector($self.config.inputSelector))) {
+            areFieldsSet = true;
         }
 
-    }
+        if (!$self.fieldsAreSet && areFieldsSet) {
+            $self.dirty = true;
+            $self.fieldsAreSet = true;
+        } else if($self.fieldsAreSet && !areFieldsSet) {
+            $self.fieldsAreSet = false;
+        }
+    };
+
+    // Check if the browser is chrome
+    this.isChrome = function() {
+        return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
+    };
+
+    // Service loop.
+    setInterval( function() {
+
+        if ($self.config.useWatcher) {
+            $self.checkIfFieldsAreSet();
+        }
+
+        if ($self.dirty) {
+            $self.init();
+        }
+    }, 300);
 }

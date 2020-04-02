@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="endereco_ams.backend_controllers_endereco_main"
+                 class="EnderecoAMS\Controller\Backend\EnderecoMain">
+            <argument type="service" id="http_client"/>
+            <argument type="service" id="pluginlogger" />
+            <tag name="shopware.controller" module="backend" controller="EnderecoMain"/>
+        </service>
+    </services>
+</container>

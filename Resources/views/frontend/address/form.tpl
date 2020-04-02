@@ -37,10 +37,12 @@
             <input autocomplete="section-billing billing street-address"
                    name="{$inputPrefix}[streetnumber]"
                    type="text"
-                   placeholder="{s name='RegisterPlaceholderStreetNumber' namespace='EnderecoAMS'}Hausnummer{/s}"
+                   required="required"
+                   aria-required="true"
+                   placeholder="{s name='RegisterPlaceholderStreetNumber' namespace='EnderecoAMS'}Hausnummer{/s}{s name="RequiredField" namespace="frontend/register/index"}{/s}"
                    id="address_streetnumber"
                    value=""
-                   class="address--field address--field-streetnumber address--field-zipcode"/>
+                   class="address--field address--field-streetnumber address--field-zipcode is--required"/>
         </div>
         <div style="clear: both"></div>
     {/capture}

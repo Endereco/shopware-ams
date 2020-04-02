@@ -7,10 +7,17 @@
  */
 function PostCodeAutocomplete(config) {
     var $self  = this;
-
-    this.config = config;
-    this.isSet = false;
-    this.tid = 'not_set';
+    /**
+     * Combine object, IE 11 compatible.
+     */
+    this.mergeObjects = function(objects) {
+        return objects.reduce(function (r, o) {
+            Object.keys(o).forEach(function (k) {
+                r[k] = o[k];
+            });
+            return r;
+        }, {})
+    };
     this.requestBody = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -21,41 +28,342 @@ function PostCodeAutocomplete(config) {
             "language": "de"
         }
     }
+    this.defaultConfig = {
+        'useWatcher': true,
+        'referer': 'not_set',
+        'tid': 'not_set'
+    };
+    this.fieldsAreSet = false;
+    this.dirty = false;
+    this.originalInput;
+    this.originalCity;
+    this.blockInput = false;
+    this.lastInputError = true;
+    this.config = $self.mergeObjects([this.defaultConfig, config]);
     this.connector = new XMLHttpRequest();
 
-    // Observe the website in a loop.
-    setInterval( function() {
-        var isNowSet = false;
-        if(
-            (null !== document.querySelector(config.inputSelector))
-        ) {
-            isNowSet = true;
+    // Includes polyfill for IE
+    if (!Array.prototype.includes) {
+        Object.defineProperty(Array.prototype, "includes", {
+            enumerable: false,
+            value: function(obj) {
+                var newArr = this.filter(function(el) {
+                    return el == obj;
+                });
+                return newArr.length > 0;
+            }
+        });
+    }
+
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
+
+    /**
+     * Helper function to update existing config, overwriting existing fields.
+     *
+     * @param newConfig
+     */
+    this.updateConfig = function(newConfig) {
+        $self.config = $self.mergeObjects([$self.config, newConfig]);
+    }
+
+    /**
+     * Checks if fields are set.
+     */
+    this.checkIfFieldsAreSet = function() {
+        var areFieldsSet = false;
+        if((null !== document.querySelector($self.config.inputSelector))) {
+            areFieldsSet = true;
         }
 
-        if (!$self.isSet && isNowSet) {
-            $self.init();
-        } else if($self.isSet && !isNowSet) {
-            $self.isSet = false;
+        if (!$self.fieldsAreSet && areFieldsSet) {
+            $self.dirty = true;
+            $self.fieldsAreSet = true;
+        } else if($self.fieldsAreSet && !areFieldsSet) {
+            $self.fieldsAreSet = false;
         }
-    }, 300);
+    }
 
-    //// Functions
-    this.init = function() {
-        console.log('Initiate PostCodeAutocomplete');
-        $self.inputElement = document.querySelector(config.inputSelector);
-        $self.dropdown = undefined;
-        $self.dropdownDraw = true;
-        $self.mouseDownHappened = false;
-        $self.predictions = [];
+    /**
+     * Get predictions for the provided input.
+     */
+    this.getPredictions = function() {
         $self.activeElementIndex = -1;
+        return new Promise( function(resolve, reject) {
+            var countryCode = 'de';
+            var countryElement;
+            // On data receive
+            $self.connector.onreadystatechange = function() {
+                var $data = {};
+                if(4 === $self.connector.readyState) {
+                    if ($self.connector.responseText && '' !== $self.connector.responseText) {
+                        $data = JSON.parse($self.connector.responseText);
+                        if ($data.result) {
+                            $self.lastInputError = false;
+                            resolve($data);
+                        } else {
+                            $self.lastInputError = true;
+                            reject($data);
+                        }
+                    } else {
+                        $self.lastInputError = true;
+                        reject($data);
+                    }
+                }
+            };
 
-        // Set mark
-        $self.inputElement.setAttribute('data-service', 'postCodeAutocomplete');
-        $self.inputElement.setAttribute('data-status', 'instantiated');
+            // Set request values.
+            if ($self.inputElement) {
+                $self.requestBody.params.postCode = $self.inputElement.value.trim();
+            }
 
-        // Generate TID
-        if (window.accounting) {
-            $self.tid = window.accounting.generateTID();
+            // Set country
+            countryElement = document.querySelector($self.config.secondaryInputSelectors.country);
+            if ((undefined !== countryElement) && (null !== countryElement)) {
+                countryCode = countryElement.options[countryElement.selectedIndex].getAttribute('data-code');
+                if ('' === countryCode) {
+                    countryCode = countryElement.options[countryElement.selectedIndex].value;
+                }
+                if ('' === countryCode) {
+                    countryCode = 'de';
+                }
+                $self.requestBody.params.country = countryCode;
+            }
+
+            // Set language
+            if (undefined !== $self.config.language && '' !== $self.config.language) {
+                $self.requestBody.params.language = $self.config.language;
+            }
+
+            /**
+             * Backward compatibility for referer
+             * If not set, it will use the browser url.
+             */
+            if ('not_set' === $self.config.referer) {
+                $self.config.referer = window.location.href;
+            }
+
+            $self.connector.open('POST', $self.config.endpoint, true);
+            $self.connector.setRequestHeader("Content-type", "application/json");
+            $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
+            $self.connector.setRequestHeader("X-Transaction-Id", $self.config.tid);
+            $self.connector.setRequestHeader("X-Transaction-Referer", $self.config.referer);
+            $self.connector.send(JSON.stringify($self.requestBody));
+        });
+    }
+
+    /**
+     * Renders predictions in a dropdown.
+     */
+    this.renderDropdown = function() {
+        var ul;
+        var li;
+        var postCode;
+        var input;
+        if ('' === $self.originalInput) {
+            input = $self.inputElement.value.trim();
+            $self.originalInput = input;
+        } else {
+            input = $self.originalInput;
+        }
+        var counter = 0;
+        var regEx;
+        var replaceMask;
+        var event;
+        var selectedPostCode;
+        var selectedCityName;
+        var cityNameField;
+        var cityNameSet = false;
+
+        $self.removeDropdown();
+
+        if (0 === $self.predictions.length) {
+            return;
+        }
+
+        ul = document.createElement('ul');
+        ul.style.zIndex = '9001';
+        ul.style.borderRadius = '4px';
+        ul.style.backgroundColor = '#fff';
+        ul.style.border = '1px solid #dedede';
+        ul.style.listStyle = 'none';
+        ul.style.padding = '4px 4px';
+        ul.style.margin = 0;
+        ul.style.position = 'absolute';
+        ul.style.top = 4 + $self.inputElement.offsetTop + $self.inputElement.offsetHeight + 'px';
+        ul.style.left = $self.inputElement.offsetLeft + 'px';
+        ul.setAttribute('class', 'endereco-dropdown');
+        $self.dropdown = ul;
+        $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);
+
+        ul.addEventListener('mouseout', function() {
+            $self.inputElement.value = $self.originalInput;
+            if (document.querySelector($self.config.secondaryInputSelectors.cityName)) {
+                document.querySelector($self.config.secondaryInputSelectors.cityName).value = $self.originalCity;
+            }
+        });
+
+        // Iterate through list and create new elements
+        $self.predictions.forEach( function(element) {
+            li = document.createElement('li');
+            li.style.cursor = 'pointer';
+            li.style.color = '#000';
+            li.style.padding = '2px 4px';
+            li.style.margin = '0';
+            li.setAttribute('data-index', counter);
+            if (counter === $self.activeElementIndex) {
+                li.style.backgroundColor = 'rgba(0, 137, 167, 0.25)';
+            } else {
+                li.style.backgroundColor = 'transparent';
+            }
+            li.addEventListener('mouseover', function() {
+                this.style.backgroundColor = 'rgba(0, 137, 167, 0.25)';
+                $self.blockInput = true;
+            });
+
+            li.addEventListener('mouseout', function() {
+                this.style.backgroundColor =  'transparent';
+                $self.blockInput = false;
+            });
+
+            regEx = new RegExp('(' + input + ')', 'ig');
+            replaceMask = '<mark style="background-color: transparent; padding: 0; margin: 0; font-weight: 700; color: ' +  $self.config.colors.secondaryColor + '">$1</mark>';
+            postCode = element.postCode.replace(regEx, replaceMask);
+            li.innerHTML = postCode;
+            li.setAttribute('data-post-code', element.postCode);
+            if (undefined !== element.cityName && '' !== element.cityName) {
+                li.innerHTML = li.innerHTML + ' ' + element.cityName;
+                li.setAttribute('data-city-name', element.cityName);
+            }
+
+            // Register event
+            li.addEventListener('mouseover', function(mEvent) {
+                mEvent.preventDefault();
+
+                selectedPostCode = this.getAttribute('data-post-code');
+                $self.inputElement.value = selectedPostCode;
+                $self.activeElementIndex = this.getAttribute('data-index') * 1;
+
+                if ($self.config.secondaryInputSelectors && $self.config.secondaryInputSelectors.cityName) {
+
+                    selectedCityName = this.getAttribute('data-city-name');
+                    cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
+                    if (cityNameField && selectedCityName) {
+                        cityNameField.value = selectedCityName.trim();
+                        cityNameSet = true;
+                    } else {
+                        cityNameSet = false;
+                    }
+                }
+            });
+
+            li.addEventListener( 'mousedown', function(mEvent) {
+                mEvent.preventDefault();
+
+                event = $self.createEvent('endereco.valid');
+                $self.inputElement.dispatchEvent(event);
+
+                if ($self.config.secondaryInputSelectors && $self.config.secondaryInputSelectors.cityName && cityNameSet) {
+                    event = $self.createEvent('endereco.valid');
+                    cityNameField.dispatchEvent(event);
+                }
+
+                $self.saveOriginal();
+                $self.removeDropdown();
+            });
+
+            $self.dropdown.appendChild(li);
+
+            counter++;
+        });
+    }
+
+    /**
+     * Removes dropdown from DOM.
+     */
+    this.removeDropdown = function() {
+        if (null !== $self.dropdown && undefined !== $self.dropdown ) {
+            $self.dropdown.parentElement.removeChild($self.dropdown);
+            $self.dropdown = undefined;
+        }
+        $self.blockInput = false;
+    }
+
+    /**
+     * Resotre original values.
+     */
+    this.restoreOriginal = function() {
+        cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
+        if (cityNameField) {
+            cityNameField.value = $self.originalCity
+        }
+        $self.inputElement.value = $self.originalInput;
+    }
+
+    /**
+     * Save original state.
+     */
+    this.saveOriginal = function() {
+        var cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
+        if (cityNameField) {
+            $self.originalCity = cityNameField.value;
+        }
+        $self.originalInput = $self.inputElement.value;
+    }
+
+    /**
+     * Validate fields.
+     */
+    this.validate = function() {
+        var input = $self.inputElement.value.trim();
+        var event;
+        var includes = false;
+
+        if ($self.lastInputError) {
+            return;
+        }
+
+        $self.predictions.forEach( function(prediction) {
+            if (input === prediction.postCode) {
+                includes = true;
+            }
+        });
+
+        if (includes) {
+            event = $self.createEvent('endereco.valid');
+            $self.inputElement.dispatchEvent(event);
+        } else if('' === input) {
+            event = $self.createEvent('endereco.clean');
+            $self.inputElement.dispatchEvent(event);
+        } else {
+            event = $self.createEvent('endereco.check');
+            $self.inputElement.dispatchEvent(event);
+        }
+    };
+
+    /**
+     * Init postCodeAutocomplete.
+     */
+    this.init = function() {
+        var cityNameSet = false;
+        try {
+            $self.inputElement = document.querySelector($self.config.inputSelector);
+            $self.dropdown = undefined;
+            $self.dropdownDraw = true;
+            $self.predictions = [];
+            $self.activeElementIndex = -1;
+
+            $self.saveOriginal();
+        } catch(e) {
+            console.log('Could not initiate PostCodeAutocomplete because of error.');
         }
 
         // Disable browser autocomplete
@@ -67,111 +375,151 @@ function PostCodeAutocomplete(config) {
 
         // Register events
         $self.inputElement.addEventListener('input', function() {
-            $this = this;
-            $self.activeElementIndex = -1;
-            $self.dropdownDraw = true;
+            var $this = this;
+            var acCall = $self.getPredictions();
+            $self.originalInput = this.value;
+            acCall.then( function($data) {
+                $self.predictions = $data.result.predictions;
+                if ($this === document.activeElement) {
+                    $self.renderDropdown();
+                }
+                if ($data.cmd && $data.cmd.use_tid) {
+                    $self.config.tid = $data.cmd.use_tid;
 
-            if (true) {
-                $self.requestBody.params.postCode = $this.value.trim();
-                if (undefined !== $self.config.country && '' !== $self.config.country) {
-                    $self.requestBody.params.country = $self.config.country;
+                    if (0 < $self.config.serviceGroup.length) {
+                        $self.config.serviceGroup.forEach( function(serviceObject) {
+                            serviceObject.updateConfig({'tid': $data.cmd.use_tid});
+                        })
+                    }
                 }
-                if (undefined !== $self.config.secondaryInputSelectors.country && '' !== document.querySelector($self.config.secondaryInputSelectors.country).value.trim()) {
-                    $self.requestBody.params.country = document.querySelector($self.config.secondaryInputSelectors.country).getAttribute('data-value').trim();
-                }
-                if (undefined !== $self.config.language && '' !== $self.config.language) {
-                    $self.requestBody.params.language = $self.config.language;
-                }
-                $self.connector.abort();
-                $self.inputElement.setAttribute('data-status', 'loading');
-                $self.connector.open('POST', $self.config.endpoint, true);
-                $self.connector.setRequestHeader("Content-type", "application/json");
-                $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
-                $self.connector.setRequestHeader("X-Transaction-Id", $self.tid);
-                $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
-
-                $self.connector.send(JSON.stringify($self.requestBody));
-            }
+            }, function($data){console.log('Rejected with data:', $data)});
         });
 
+        $self.inputElement.addEventListener('focus', function() {
+            $self.saveOriginal();
+            if ('' === this.value && 'not_set' !== $self.config.tid) {
+                return;
+            }
+            var acCall = $self.getPredictions();
+            acCall.then( function($data) {
+                $self.predictions = $data.result.predictions;
+                $self.validate();
+                if ($data.cmd && $data.cmd.use_tid) {
+                    $self.config.tid = $data.cmd.use_tid;
+
+                    if (0 < $self.config.serviceGroup.length) {
+                        $self.config.serviceGroup.forEach( function(serviceObject) {
+                            serviceObject.updateConfig({'tid': $data.cmd.use_tid});
+                        })
+                    }
+                }
+            }, function($data){console.log('Rejected with data:', $data)});
+        });
+
+        // Register blur event
         $self.inputElement.addEventListener('blur', function() {
-            if ($self.mouseDownHappened) {
-                $self.mouseDownHappened = false;
-                this.focus();
-            }
-            setTimeout(function() {
-                if(undefined !== $self.dropdown) {
-                    $self.dropdownDraw = false;
-                    $self.dropdown.remove();
-                }
-            }, 100);
+            $self.removeDropdown();
+            $self.saveOriginal();
+            $self.validate();
         });
 
-        $self.inputElement.addEventListener('change', function() {
+        // Register mouse navigation
+        $self.inputElement.addEventListener('keydown', function(mEvent) {
+            var selectedCityName, cityNameField, event;
+            if ('ArrowUp' === mEvent.key || 'Up' === mEvent.key) {
+                mEvent.preventDefault();
 
-            setTimeout(function() {
-                if ('chosen' !== $self.inputElement.getAttribute('data-status')) {
-                    hasInput = false;
-                    $self.predictions.forEach( function(prediction) {
-                        if (prediction.postCode === $self.inputElement.value.trim()){
-                            hasInput = true;
-                        }
-                    });
+                if (0 === $self.activeElementIndex) {
+                    $self.activeElementIndex = -1;
+                    $self.inputElement.value = $self.originalInput;
+                    if (document.querySelector($self.config.secondaryInputSelectors.cityName)) {
+                        document.querySelector($self.config.secondaryInputSelectors.cityName).value = $self.originalCity;
+                    }
+                }
 
+                if (0 < $self.activeElementIndex) {
+                    $self.activeElementIndex--;
+                    // Prefill selection to input
                     if (0 < $self.predictions.length) {
-                        if (!hasInput) {
-                            event = new Event('endereco.check');
-                            $self.inputElement.dispatchEvent(event);
+                        $self.inputElement.value = $self.predictions[$self.activeElementIndex].postCode;
+                        selectedCityName = $self.predictions[$self.activeElementIndex].cityName;
+                        cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
+                        if (selectedCityName && cityNameField) {
+                            cityNameField.value = selectedCityName.trim();
+                            cityNameSet = true;
                         } else {
-                            event = new Event('endereco.valid');
-                            $self.inputElement.dispatchEvent(event);
+                            cityNameSet = false;
                         }
-                    } else {
-                        event = new Event('endereco.clean');
-                        $self.inputElement.dispatchEvent(event);
                     }
                 }
-            }, 1000);
-        });
-
-        $self.inputElement.addEventListener('keydown', function(e) {
-            e = e || window.event;
-            if (40 == e.keyCode && $self.activeElementIndex < ($self.predictions.length-1)) {
-                e.preventDefault();
-                $self.activeElementIndex++;
                 $self.renderDropdown();
-                $self.renderDropdownElements();
+            }
 
-            } else if(38 == e.keyCode && $self.activeElementIndex > 0) {
-                e.preventDefault();
-                $self.activeElementIndex--;
-                $self.renderDropdown();
-                $self.renderDropdownElements();
-            } else if(13 == e.keyCode) {
-                if($self.activeElementIndex >= 0 && $self.activeElementIndex <= $self.predictions.length) {
-                    e.preventDefault();
+            if ('ArrowDown' === mEvent.key || 'Down' === mEvent.key) {
+                mEvent.preventDefault();
+                if ($self.activeElementIndex < ($self.predictions.length-1)) {
+                    $self.activeElementIndex++;
+                }
+
+                // Prefill selection to input
+                if (0 < $self.predictions.length) {
                     $self.inputElement.value = $self.predictions[$self.activeElementIndex].postCode;
-                    event = new Event('endereco.valid');
-                    $self.inputElement.dispatchEvent(event);
-                    $self.inputElement.setAttribute('data-status', 'chosen');
-
-                    // Process secondary input selectors
-                    // TODO: iterate through secondary selector and try setting each
+                    selectedCityName = $self.predictions[$self.activeElementIndex].cityName;
                     cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
-                    if (cityNameField && $self.predictions[$self.activeElementIndex].cityName && '' !== $self.predictions[$self.activeElementIndex].cityName) {
-                        cityNameField.value = $self.predictions[$self.activeElementIndex].cityName.trim();
-                        cityNameField.setAttribute('data-status', 'chosen');
-                        event = new Event('endereco.valid');
-                        cityNameField.dispatchEvent(event);
+                    if (selectedCityName && cityNameField) {
+                        cityNameField.value = selectedCityName.trim();
+                        cityNameSet = true;
+                    } else {
+                        cityNameSet = false;
                     }
-
-                    $self.activeElementIndex = -1
-                    $self.dropdown.style.display = 'none';
                 }
+
+                $self.renderDropdown();
+            }
+
+            if ('Enter' === mEvent.key || 'Enter' === mEvent.key) {
+                mEvent.preventDefault();
+
+                // If only one prediction
+                if (1 === $self.predictions.length) {
+                    // Prefill selection to input
+                    $self.inputElement.value = $self.predictions[0].postCode;
+                    selectedCityName = $self.predictions[0].cityName;
+                    cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
+                    if (cityNameField && ('' !== selectedCityName)) {
+                        cityNameField.value = selectedCityName.trim();
+                        cityNameSet = true;
+                    }
+                }
+
+                // Then
+                event = $self.createEvent('endereco.valid');
+                $self.inputElement.dispatchEvent(event);
+
+                cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
+                if (cityNameField && cityNameSet) {
+                    event = $self.createEvent('endereco.valid');
+                    cityNameField.dispatchEvent(event);
+                }
+
+                $self.saveOriginal();
+                $self.removeDropdown();
+            }
+
+            if ('Tab' === mEvent.key || 'Tab' === mEvent.key) {
+                $self.saveOriginal();
+                $self.removeDropdown();
+            }
+
+            if ($self.blockInput) {
+                mEvent.preventDefault();
+                return;
             }
         });
 
-        $self.isSet = true;
+        $self.dirty = false;
+
+        console.log('PostcodeAutocomplete initiated.');
     }
 
     // Check if the browser is chrome
@@ -179,120 +527,15 @@ function PostCodeAutocomplete(config) {
         return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
     }
 
-    // Create ul dropdown
-    this.renderDropdown = function() {
-        if(undefined !== $self.dropdown && undefined !== $self.dropdown) {
-            $self.dropdown.remove();
+    // Service loop.
+    setInterval( function() {
+
+        if ($self.config.useWatcher) {
+            $self.checkIfFieldsAreSet();
         }
 
-        $self.dropdown = undefined;
-
-        var ul = document.createElement('ul');
-        ul.style.display = 'none';
-        ul.style.zIndex = '9001';
-        ul.style.borderRadius = '4px';
-        ul.style.backgroundColor = '#fff',
-        ul.style.border = '1px solid #dedede';
-        ul.style.listStyle = 'none';
-        ul.style.padding = '4px 4px';
-        ul.style.margin = 0;
-        ul.style.position = 'absolute';
-        ul.style.top = 4 + $self.inputElement.offsetTop + $self.inputElement.offsetHeight + 'px';
-        ul.style.left = $self.inputElement.offsetLeft + 'px';
-        ul.setAttribute('class', 'endereco-dropdown')
-        $self.dropdown = ul;
-        $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);
-    }
-
-    // Create dropdown elements
-    this.renderDropdownElements = function() {
-        var li;
-        var input = $self.inputElement.value.trim();
-        var counter = 0;
-
-        // Remove all existing elements
-        while ($self.dropdown.hasChildNodes()) {
-            $self.dropdown.removeChild($self.dropdown.lastChild);
+        if ($self.dirty) {
+            $self.init();
         }
-
-        // Iterate through list and create new elements
-        $self.predictions.forEach( function(element) {
-            li = document.createElement('li');
-            li.style.cursor = 'pointer';
-            li.style.color = '#000';
-            li.style.padding = '2px 4px';
-            li.style.margin = '0';
-            if (counter === $self.activeElementIndex) {
-                li.style.backgroundColor = 'rgba(0, 137, 167, 0.25)';
-            } else {
-                li.style.backgroundColor = 'transparent';
-            }
-            li.addEventListener('mouseover', function() {
-                this.style.backgroundColor = 'rgba(0, 137, 167, 0.25)';
-            });
-
-            li.addEventListener('mouseout', function() {
-                this.style.backgroundColor =  'transparent';
-            });
-
-            var regEx = new RegExp('(' + input + ')', 'ig');
-            var replaceMask = '<mark style="background-color: transparent; padding: 0; margin: 0; font-weight: 700; color: ' +  $self.config.colors.secondaryColor + '">$1</mark>';
-            postCode = element.postCode.replace(regEx, replaceMask);
-            li.innerHTML = postCode;
-            li.setAttribute('data-post-code', element.postCode);
-            if (undefined !== element.cityName && '' !== element.cityName) {
-                li.innerHTML = li.innerHTML + ' ' + element.cityName;
-                li.setAttribute('data-city-name', element.cityName);
-            }
-
-            // Register event
-            li.addEventListener('mousedown', function() {
-                $self.mouseDownHappened = true;
-                selectedPostCode = this.getAttribute('data-post-code');
-                $self.inputElement.value = selectedPostCode;
-                $self.inputElement.setAttribute('data-status', 'chosen');
-                event = new Event('endereco.valid');
-                $self.inputElement.dispatchEvent(event);
-
-                selectedCityName = this.getAttribute('data-city-name');
-                cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
-                if (selectedCityName && cityNameField) {
-                    cityNameField.value = selectedCityName.trim();
-                    event = new Event('endereco.valid');
-                    cityNameField.dispatchEvent(event);
-                    cityNameField.setAttribute('data-status', 'chosen');
-                }
-            });
-
-            $self.dropdown.appendChild(li);
-
-            counter++;
-        });
-
-        if ($self.predictions.length === 0) {
-            $self.dropdown.style.display = 'none';
-        } else {
-            $self.dropdown.style.display = 'block';
-        }
-    }
-
-    // On data receive
-    this.connector.onreadystatechange = function() {
-        if(4 === $self.connector.readyState && $self.dropdownDraw) {
-            if ($self.connector.responseText && '' !== $self.connector.responseText) {
-                $data = JSON.parse($self.connector.responseText);
-                if (undefined !== $data.result) {
-                    $self.predictions = $data.result.predictions;
-                } else {
-                    $self.predictions = [];
-                }
-            } else {
-                $self.predictions = [];
-            }
-            $self.renderDropdown();
-            $self.renderDropdownElements();
-            $self.inputElement.setAttribute('data-status', 'list-rendered');
-        }
-
-    }
+    }, 300);
 }

@@ -3,16 +3,23 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
+    <imports>
+        <import resource="services/backend.xml"/>
+    </imports>
+
     <services>
         <service id="endereco_ams.subscriber.frontend"
                  class="EnderecoAMS\Subscriber\Frontend">
             <argument>%endereco_ams.plugin_dir%</argument>
             <argument type="service" id="endereco_ams.components.accounting" />
+            <argument type="service" id="pluginlogger" />
             <tag name="shopware.event_subscriber"/>
         </service>
         <service id="endereco_ams.components.accounting"
                  class="EnderecoAMS\Components\Accounting">
-            <argument>%endereco_ams.plugin_dir%</argument>
+            <argument type="service" id="service_container" />
+            <argument type="service" id="pluginlogger" />
+            <argument type="service" id="http_client"/>
             <tag name="endereco_ams.components.accounting"/>
         </service>
     </services>

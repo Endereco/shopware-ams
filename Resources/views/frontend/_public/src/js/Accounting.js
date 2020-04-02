@@ -1,13 +1,12 @@
 /**
  * Endereco SDK.
  *
- * @author Ilja Weber <ilja.weber@mobilemjo.de>
+ * @author Ilja Weber <ilja@endereco.de>
  * @copyright 2019 mobilemojo – Apps & eCommerce UG (haftungsbeschränkt) & Co. KG
  * {@link https://endereco.de}
  */
 function Accounting() {
     var $self  = this;
-    this.globalTimeout = undefined;
 
     this.generateTID = function() {
         prename = Math.random().toString(36).substring(2) + Date.now() + '_' + $self.hashCode(window.location.href);
