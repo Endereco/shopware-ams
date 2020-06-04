@@ -174,6 +174,7 @@ function PostCodeAutocomplete(config) {
         } else {
             input = $self.originalInput;
         }
+        var direction = getComputedStyle($self.inputElement).direction;
         var counter = 0;
         var regEx;
         var replaceMask;
@@ -190,6 +191,11 @@ function PostCodeAutocomplete(config) {
         }
 
         ul = document.createElement('ul');
+        if ('rtl' === direction) {
+            ul.style.textAlign = 'right';
+        } else {
+            ul.style.textAlign = 'left';
+        }
         ul.style.zIndex = '9001';
         ul.style.borderRadius = '4px';
         ul.style.backgroundColor = '#fff';
@@ -199,7 +205,12 @@ function PostCodeAutocomplete(config) {
         ul.style.margin = 0;
         ul.style.position = 'absolute';
         ul.style.top = 4 + $self.inputElement.offsetTop + $self.inputElement.offsetHeight + 'px';
-        ul.style.left = $self.inputElement.offsetLeft + 'px';
+        if ('rtl' === direction) {
+            ul.style.right = $self.inputElement.offsetParent.offsetWidth - $self.inputElement.offsetLeft - $self.inputElement.offsetWidth + 'px';
+        } else {
+            ul.style.left = $self.inputElement.offsetLeft + 'px';
+        }
+
         ul.setAttribute('class', 'endereco-dropdown');
         $self.dropdown = ul;
         $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);

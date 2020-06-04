@@ -39,6 +39,9 @@
             connection: false,
             popUpId: '',
             referer: document.querySelector('body').className,
+            textDirection: function() {
+              return 'ltr';
+            },
             enderecoColorData: {$colorData|json_encode},
             enderecoTextData: {$textData|json_encode}
         }

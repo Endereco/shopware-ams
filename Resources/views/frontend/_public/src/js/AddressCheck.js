@@ -48,6 +48,7 @@ function AddressCheck(config) {
     };
     this.defaultConfig = {
         'checkOnBlur': true,
+        'useInlineStyles': true,
         'referer': 'not_set',
         'useWatcher': true,
         'tid': 'not_set',
@@ -256,7 +257,13 @@ function AddressCheck(config) {
 
     this.isAnyEmpty = function() {
         var streetEmpty = ('' === $self.streetElement.value.trim());
-        var houseNumberEmpty = ('' === $self.houseNumberElement.value.trim());
+        var houseNumberEmpty;
+        if ($self.houseNumberElement.hasAttribute('required')) {
+            houseNumberEmpty = ('' === $self.houseNumberElement.value.trim());
+        } else {
+            houseNumberEmpty = false;
+        }
+
         var postCodeEmpty = ('' === $self.postCodeElement.value.trim());
         var cityNameEmpty = ('' === $self.cityNameElement.value.trim());
 
@@ -388,42 +395,54 @@ function AddressCheck(config) {
 
                 // Create overlay
                 overlay_element = document.createElement('div');
+
+                var direction = getComputedStyle($self.streetElement).direction;
+
                 $self.overlay = overlay_element;
                 overlay_element.id = 'endereco-acresscheck-overlay';
-                overlay_element.style.position = 'fixed';
-                overlay_element.style.padding = '0';
-                overlay_element.style.top = '0';
-                overlay_element.style.left = '0';
-                overlay_element.style.width = '100%';
-                overlay_element.style.height = '100%';
-                overlay_element.style.zIndex = '90000';
-                overlay_element.style.display = 'flex';
-                overlay_element.style.justifyContent = 'center';
-                overlay_element.style.alignItems = 'center';
-                overlay_element.style.backgroundColor = 'rgba(0, 0, 0, 0.25)';
+                if ($self.config.useInlineStyles) {
+                    overlay_element.style.position = 'fixed';
+                    overlay_element.style.padding = '0';
+                    overlay_element.style.top = '0';
+                    overlay_element.style.left = '0';
+                    overlay_element.style.width = '100%';
+                    overlay_element.style.height = '100%';
+                    overlay_element.style.zIndex = '90000';
+                    overlay_element.style.display = 'flex';
+                    overlay_element.style.justifyContent = 'center';
+                    overlay_element.style.alignItems = 'center';
+                    overlay_element.style.backgroundColor = 'rgba(0, 0, 0, 0.25)';
+                    overlay_element.style.direction = direction;
+                }
 
                 // Window
                 window_element = document.createElement('div');
-                window_element.style.width = '100%';
-                window_element.style.boxSizing = 'border-box';
-                window_element.style.maxWidth = '480px';
-                window_element.style.backgroundColor = '#fff';
-                window_element.style.border = '1px solid #ccc';
-                window_element.style.borderRadius = '4px';
-                window_element.style.overflow = 'hidden';
+                if ($self.config.useInlineStyles) {
+                    window_element.style.width = '100%';
+                    window_element.style.boxSizing = 'border-box';
+                    window_element.style.maxWidth = '480px';
+                    window_element.style.backgroundColor = '#fff';
+                    window_element.style.border = '1px solid #ccc';
+                    window_element.style.borderRadius = '4px';
+                    window_element.style.overflow = 'hidden';
+                }
+
                 overlay_element.appendChild(window_element);
 
                 // Window header
                 window_header_element = document.createElement('div');
-                window_header_element.style.width = '100%';
-                window_header_element.style.padding = '8px 16px';
-                window_header_element.style.boxSizing = 'border-box';
-                window_header_element.style.color =  $self.config.colors.primaryColorText;
-                window_header_element.style.display = 'flex';
-                window_header_element.style.fontSize = '16px';
-                window_header_element.style.lineHeight = '24px';
-                window_header_element.style.justifyContent = 'space-between';
-                window_header_element.style.backgroundColor = $self.config.colors.primaryColor;
+                if ($self.config.useInlineStyles) {
+                    window_header_element.style.width = '100%';
+                    window_header_element.style.padding = '8px 16px';
+                    window_header_element.style.boxSizing = 'border-box';
+                    window_header_element.style.color =  $self.config.colors.primaryColorText;
+                    window_header_element.style.display = 'flex';
+                    window_header_element.style.fontSize = '16px';
+                    window_header_element.style.lineHeight = '24px';
+                    window_header_element.style.justifyContent = 'space-between';
+                    window_header_element.style.backgroundColor = $self.config.colors.primaryColor;
+                }
+
                 window_element.appendChild(window_header_element);
 
                 // Header Title
@@ -432,8 +451,11 @@ function AddressCheck(config) {
                 // Close button
                 close_element = document.createElement('span');
                 close_element.innerHTML = '&times;';
-                close_element.style.cursor = 'pointer';
-                close_element.style.boxSizing = 'border-box';
+                if ($self.config.useInlineStyles) {
+                    close_element.style.cursor = 'pointer';
+                    close_element.style.boxSizing = 'border-box';
+                }
+
                 close_element.addEventListener('click', function() {
                     $self.removeOverlay();
                 });
@@ -441,24 +463,33 @@ function AddressCheck(config) {
 
                 // Window body
                 window_body_element = document.createElement('div');
-                window_body_element.style.width = '100%';
-                window_body_element.style.padding = '8px 16px';
-                window_body_element.style.boxSizing = 'border-box';
-                window_body_element.style.backgroundColor = '#fff';
+                if ($self.config.useInlineStyles) {
+                    window_body_element.style.width = '100%';
+                    window_body_element.style.padding = '8px 16px';
+                    window_body_element.style.boxSizing = 'border-box';
+                    window_body_element.style.backgroundColor = '#fff';
+                }
+
                 window_element.appendChild(window_body_element);
 
                 headline1_element = document.createElement('p');
-                headline1_element.style.boxSizing = 'border-box';
-                headline1_element.style.margin = '15px 0 5px';
+                if ($self.config.useInlineStyles) {
+                    headline1_element.style.boxSizing = 'border-box';
+                    headline1_element.style.margin = '15px 0 5px';
+                }
+
                 headline1_element.appendChild(document.createTextNode($self.config.texts.addressCheckArea1));
                 window_body_element.appendChild(headline1_element);
 
                 // Create default choice
                 default_label_element = document.createElement('label');
-                default_label_element.style.fontWeight = '700';
-                default_label_element.style.width = '100%';
-                default_label_element.style.display = 'inline-block';
-                default_label_element.style.boxSizing = 'border-box';
+                if ($self.config.useInlineStyles) {
+                    default_label_element.style.fontWeight = '700';
+                    default_label_element.style.width = '100%';
+                    default_label_element.style.display = 'inline-block';
+                    default_label_element.style.boxSizing = 'border-box';
+                }
+
                 default_label_element.setAttribute('data-offset', '-1');
                 default_label_element.addEventListener('click', function() {
                     $self.activeIndex = -1;
@@ -468,22 +499,31 @@ function AddressCheck(config) {
                 default_cb_element.setAttribute('type', 'radio');
                 default_cb_element.setAttribute('name', 'endereco-radio');
                 default_cb_element.checked = true;
-                default_cb_element.style.marginRight = '10px';
-                default_cb_element.style.boxSizing = 'border-box';
+                if ($self.config.useInlineStyles) {
+                    if ('rtl' === direction) {
+                        default_cb_element.style.marginLeft = '10px';
+                    } else {
+                        default_cb_element.style.marginRight = '10px';
+                    }
+                    default_cb_element.style.boxSizing = 'border-box';
+                }
+
                 default_label_element.appendChild(default_cb_element);
-                var address = $self.postCodeElement.value.trim() +
-                    ' ' +
-                    $self.cityNameElement.value.trim() +
-                    ' ' +
-                    $self.streetElement.value.trim() +
-                    ' ' +
-                    $self.houseNumberElement.value.trim();
+                var countryCode = $self.countryElement.options[$self.countryElement.selectedIndex].getAttribute('data-code');
+                if ('fr' === countryCode) {
+                    var address = [$self.houseNumberElement.value.trim(), $self.streetElement.value.trim(), $self.postCodeElement.value.trim(), $self.cityNameElement.value.trim()].join(' ').trim();
+                } else {
+                    var address = [$self.postCodeElement.value.trim(), $self.cityNameElement.value.trim(), $self.streetElement.value.trim(), $self.houseNumberElement.value.trim()].join(' ').trim();
+                }
                 default_label_element.appendChild(document.createTextNode(address));
                 window_body_element.appendChild(default_label_element);
 
                 headline2_element = document.createElement('p');
-                headline2_element.style.margin = '15px 0 5px';
-                headline2_element.style.boxSizing = 'border-box';
+                if ($self.config.useInlineStyles) {
+                    headline2_element.style.margin = '15px 0 5px';
+                    headline2_element.style.boxSizing = 'border-box';
+                }
+
                 headline2_element.appendChild(document.createTextNode($self.config.texts.addressCheckArea2));
                 window_body_element.appendChild(headline2_element);
 
@@ -491,10 +531,13 @@ function AddressCheck(config) {
                 var counter = 0;
                 $self.predictions.forEach(function(prediction) {
                     default_label_element = document.createElement('label');
-                    default_label_element.style.fontWeight = '700';
-                    default_label_element.style.width = '100%';
-                    default_label_element.style.display = 'inline-block';
-                    default_label_element.style.boxSizing = 'border-box';
+                    if ($self.config.useInlineStyles) {
+                        default_label_element.style.fontWeight = '700';
+                        default_label_element.style.width = '100%';
+                        default_label_element.style.display = 'inline-block';
+                        default_label_element.style.boxSizing = 'border-box';
+                    }
+
                     default_label_element.setAttribute('data-offset', counter);
                     default_label_element.addEventListener('click', function() {
                         $self.activeIndex = this.getAttribute('data-offset');
@@ -503,16 +546,23 @@ function AddressCheck(config) {
                     default_cb_element = document.createElement('input');
                     default_cb_element.setAttribute('type', 'radio');
                     default_cb_element.setAttribute('name', 'endereco-radio');
-                    default_cb_element.style.marginRight = '10px';
-                    default_cb_element.style.boxSizing = 'border-box';
+                    if ($self.config.useInlineStyles) {
+                        if ('rtl' === direction) {
+                            default_cb_element.style.marginLeft = '10px';
+                        } else {
+                            default_cb_element.style.marginRight = '10px';
+                        }
+                        default_cb_element.style.boxSizing = 'border-box';
+                    }
+
                     default_label_element.appendChild(default_cb_element);
-                    var address = prediction.postCode +
-                        ' ' +
-                        prediction.cityName +
-                        ' ' +
-                        prediction.street +
-                        ' ' +
-                        prediction.houseNumber;
+                    var address = "";
+                    var countryCode = $self.countryElement.options[$self.countryElement.selectedIndex].getAttribute('data-code');
+                    if ('fr' === countryCode) {
+                        address = [prediction.houseNumber, prediction.street, prediction.postCode, prediction.cityName].join(' ').trim();
+                    } else {
+                        address = [prediction.postCode, prediction.cityName, prediction.street, prediction.houseNumber].join(' ').trim();
+                    }
                     default_label_element.appendChild(document.createTextNode(address));
                     window_body_element.appendChild(default_label_element);
                     counter++;
@@ -520,12 +570,15 @@ function AddressCheck(config) {
 
                 // Window footer
                 window_footer_element = document.createElement('div');
-                window_footer_element.style.width = '100%';
-                window_footer_element.style.boxSizing = 'border-box';
-                window_footer_element.style.padding = '8px 16px';
-                window_footer_element.style.display = 'flex';
-                window_footer_element.style.justifyContent = 'flex-end';
-                window_footer_element.style.backgroundColor = '#fff';
+                if ($self.config.useInlineStyles) {
+                    window_footer_element.style.width = '100%';
+                    window_footer_element.style.boxSizing = 'border-box';
+                    window_footer_element.style.padding = '8px 16px';
+                    window_footer_element.style.display = 'flex';
+                    window_footer_element.style.justifyContent = 'flex-end';
+                    window_footer_element.style.backgroundColor = '#fff';
+                }
+
                 window_element.appendChild(window_footer_element);
 
                 // Submit
@@ -533,14 +586,16 @@ function AddressCheck(config) {
                 submit_element.setAttribute('class', 'endereco-submit-btn');
                 submit_element.appendChild(document.createTextNode($self.config.texts.addressCheckButton));
                 // Default button style
-                submit_element.style.color = $self.config.colors.primaryColorText;
-                submit_element.style.backgroundColor = $self.config.colors.primaryColor;
-                submit_element.style.border = '1px solid ' + $self.config.colors.primaryColorHover;
-                submit_element.style.padding = '6px 12px';
-                submit_element.style.fontSize = '14px';
-                submit_element.style.borderRadius = '4px';
-                submit_element.style.textAlign = 'center';
-                submit_element.style.boxSizing = 'border-box';
+                if ($self.config.useInlineStyles) {
+                    submit_element.style.color = $self.config.colors.primaryColorText;
+                    submit_element.style.backgroundColor = $self.config.colors.primaryColor;
+                    submit_element.style.border = '1px solid ' + $self.config.colors.primaryColorHover;
+                    submit_element.style.padding = '6px 12px';
+                    submit_element.style.fontSize = '14px';
+                    submit_element.style.borderRadius = '4px';
+                    submit_element.style.textAlign = 'center';
+                    submit_element.style.boxSizing = 'border-box';
+                }
 
                 submit_element.addEventListener('mouseover', function() {
                     this.style.backgroundColor = $self.config.colors.primaryColorHover;

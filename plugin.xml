@@ -5,15 +5,41 @@
     <label lang="en">EnderecoAMS</label>
     <label lang="de">EnderecoAMS</label>
 
-    <version>2.2.2</version>
+    <version>2.3.1</version>
 
     <copyright>(c) Endereco UG (haftungsbeschränkt)</copyright>
 
     <author>Endereco UG (haftungsbeschränkt)</author>
 
-    <license></license>
+    <license>AGPLv3</license>
 
     <compatibility minVersion="5.3.0" />
+
+    <changelog version="2.3.1">
+        <changes lang="en">
+            <![CDATA[
+            Konfig ist nun Shopspezifisch.
+        ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+            Each shop has its own config.
+        ]]>
+        </changes>
+    </changelog>
+
+    <changelog version="2.3.0">
+        <changes lang="en">
+            <![CDATA[
+            Fügt unterstützung für RLT Texte
+        ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+            Add RTL textdirection capability.
+        ]]>
+        </changes>
+    </changelog>
 
     <changelog version="2.2.2">
         <changes lang="en">

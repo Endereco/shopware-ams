@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.3/engine/Shopware/Components/Plugin/schema/config.xsd">
     <elements>
-        <element type="text" scope="locale">
+        <element type="text" scope="shop">
             <name>enderecoApiKey</name>
             <label lang="de">Zugriffsschlüssel (kann man bei info@endereco.de anfordern)</label>
             <label lang="en">API-Key (you get it from info@endereco.de)</label>
@@ -35,7 +35,7 @@
             </options>
         </element>
 
-        <element type="boolean" scope="locale">
+        <element type="boolean" scope="shop">
             <name>enderecoUseStatus</name>
             <label lang="de">Statusanzeige</label>
             <label lang="en">Status indicator</label>
@@ -44,14 +44,14 @@
             <description lang="en">Choose whether you want to display status for the data inserted or not. When deactivated, neither warning nor success sign will be displayed. </description>
         </element>
 
-        <element type="color">
+        <element type="color" scope="shop">
             <name>enderecoUsewarningColor</name>
             <label lang="de">Farbe für Hinweise (default)</label>
             <label lang="en">Color for warning (default)</label>
             <value>#f0ad4e</value>
         </element>
 
-        <element type="color">
+        <element type="color" scope="shop">
             <name>enderecoUsesuccessColor</name>
             <label lang="de">Farbe für korrekte Daten (default)</label>
             <label lang="en">Color for success (default)</label>
@@ -59,7 +59,7 @@
         </element>
 
 
-        <element type="boolean" scope="locale">
+        <element type="boolean" scope="shop">
             <name>enderecoUseAddressServices</name>
             <label lang="de">Eingabehilfe und Adressprüfung</label>
             <label lang="en">Inputassistant and Addresscheck</label>
@@ -68,14 +68,14 @@
             <description lang="en">Activates address input assistant and address checks.</description>
         </element>
 
-        <element type="color">
+        <element type="color" scope="shop">
             <name>enderecoUseprimaryColor</name>
             <label lang="de">Hauptfarbe (default)</label>
             <label lang="en">Main color (default)</label>
             <value>#fa5d27</value>
         </element>
 
-        <element type="color">
+        <element type="color" scope="shop">
             <name>enderecoUseprimaryColorHover</name>
             <label lang="de">Hauptfarbe (hover)</label>
             <label lang="en">Main color (hover)</label>
@@ -83,14 +83,14 @@
         </element>
 
 
-        <element type="color">
+        <element type="color" scope="shop">
             <name>enderecoUsesecondaryColor</name>
             <label lang="de">Dropdown Auswahl Farbe</label>
             <label lang="en">Dropdown selection color</label>
             <value>#d9400b</value>
         </element>
 
-        <element type="boolean" scope="locale">
+        <element type="boolean" scope="shop">
             <name>enderecoUseEmailCheck</name>
             <label lang="de">E-Mail-Prüfung</label>
             <label lang="en">E-Mail Check</label>
@@ -99,7 +99,7 @@
             <description lang="en">While activated, eMail Check verifies the syntax, availability and deliverability of an entered eMail Address. It also checks whether it is a one-time or spam eMail Address. </description>
         </element>
 
-        <element type="boolean" scope="locale">
+        <element type="boolean" scope="shop">
             <name>enderecoUseNameCheck</name>
             <label lang="de">Anrede-Prüfung</label>
             <label lang="en">Salutation Check</label>
@@ -108,7 +108,7 @@
             <description lang="en">While activated, this service verifies whether chosen salutation corresponds to the first name. It is also corrects small and capital letters </description>
         </element>
 
-        <element type="boolean" scope="locale">
+        <element type="boolean" scope="shop">
             <name>enderecoUsePrephoneCheck</name>
             <label lang="de">Vorwahl-Prüfung (Nummerformatierung)</label>
             <label lang="en">Area code Check (formatting)</label>
@@ -117,7 +117,7 @@
             <description lang="en">White activated, this service verifies whether an inserted area code exists and formats the number in accordance to chosen format. </description>
         </element>
 
-        <element type="select" scope="locale">
+        <element type="select" scope="shop">
             <name>enderecoUsePrephoneFormat</name>
             <label lang="de">Nummer-Formatierung:</label>
             <label lang="en">Phone Format</label>
