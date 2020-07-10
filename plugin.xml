@@ -5,7 +5,7 @@
     <label lang="en">EnderecoAMS</label>
     <label lang="de">EnderecoAMS</label>
 
-    <version>2.3.1</version>
+    <version>2.4.0</version>
 
     <copyright>(c) Endereco UG (haftungsbeschränkt)</copyright>
 
@@ -14,6 +14,19 @@
     <license>AGPLv3</license>
 
     <compatibility minVersion="5.3.0" />
+
+    <changelog version="2.4.0">
+        <changes lang="en">
+            <![CDATA[
+            Kompabilität mit DHL Wunschpaket
+        ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+            Make compatible with DHL Wunschpaket Plugin.
+        ]]>
+        </changes>
+    </changelog>
 
     <changelog version="2.3.1">
         <changes lang="en">

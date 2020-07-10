@@ -162,5 +162,91 @@
         {$smarty.capture.c_frontend_register_shipping_fieldset_input_addition_address_line2}
         {$smarty.capture.c_frontend_register_shipping_fieldset_different_shipping}
     </div>
+    <script>
+        (function() {
+            function handleSelect(wunschSelector) {
+                var streetNameBlock = wunschSelector.form.querySelector('.register--shipping .register--street-name-number');
+                var streetNamefullBlock = wunschSelector.form.querySelector('.register--shipping .register--street');
+                if ('address' === wunschSelector.value) {
+                    if (streetNameBlock) {
+                        streetNameBlock.style.setProperty('display', 'block', 'important');
+                        streetNameBlock.querySelector('[name="register[shipping][streetname]"]').required = true;
+                        streetNameBlock.querySelector('[name="register[shipping][streetnumber]"]').required = false;
+                    }
+                    if (streetNamefullBlock) {
+                        streetNamefullBlock.style.setProperty('display', 'none', 'important');
+                    }
+                    var interval = setInterval( function() {
+                        if (undefined !== window.enderecoGlobal.streetShadowDef) {
+                            if (window.enderecoGlobal.streetShadowDel) {
+                                window.enderecoGlobal.streetShadowDel.config.streetSelector = window.enderecoGlobal.streetShadowDel.config.streetSelector.replace('rinput', 'input');
+                            }
+                            if (window.enderecoGlobal.streetShadowDef) {
+                                window.enderecoGlobal.streetShadowDef.config.streetSelector = window.enderecoGlobal.streetShadowDef.config.streetSelector.replace('rinput', 'input');
+                            }
+                            clearInterval(interval)
+                        }
+                    }, 100);
+
+                } else {
+                    if (streetNameBlock) {
+                        streetNameBlock.style.setProperty('display', 'none', 'important');
+                        streetNameBlock.querySelector('[name="register[shipping][streetname]"]').value = '';
+                        streetNameBlock.querySelector('[name="register[shipping][streetnumber]"]').value = '';
+                        streetNameBlock.querySelector('[name="register[shipping][streetname]"]').required = false;
+                        streetNameBlock.querySelector('[name="register[shipping][streetnumber]"]').required = false;
+                    }
+                    if (streetNamefullBlock) {
+                        streetNamefullBlock.style.setProperty('display', 'block', 'important');
+                    }
+
+                    var interval = setInterval( function() {
+                        if (undefined !== window.enderecoGlobal.streetShadowDef) {
+                            if (window.enderecoGlobal.streetShadowDel) {
+                                window.enderecoGlobal.streetShadowDel.config.streetSelector = window.enderecoGlobal.streetShadowDel.config.streetSelector.replace('input', 'rinput');
+                            }
+                            if (window.enderecoGlobal.streetShadowDef) {
+                                window.enderecoGlobal.streetShadowDef.config.streetSelector = window.enderecoGlobal.streetShadowDef.config.streetSelector.replace('input', 'rinput');
+                            }
+                            clearInterval(interval)
+                        }
+                    }, 100);
+                }
+
+            }
+
+            if (document.readyState === "complete") {
+                var wunschSelector = document.querySelector('[name="register[shipping][attribute][moptwunschpaketaddresstype]"]');
+                if (wunschSelector) {
+                    wunschSelector.addEventListener('change', function(e) {
+                        handleSelect(e.target);
+                    });
+                    var interval = setInterval( function() {
+                        if (undefined !== window.enderecoGlobal.connection) {
+                            handleSelect(wunschSelector);
+                            clearInterval(interval)
+                        }
+                    }, 100);
+
+                }
+            } else {
+                document.addEventListener("DOMContentLoaded", function() {
+                    var wunschSelector = document.querySelector('[name="register[shipping][attribute][moptwunschpaketaddresstype]"]');
+                    if (wunschSelector) {
+                        wunschSelector.addEventListener('change', function(e) {
+                            handleSelect(e.target);
+                        });
+                        var interval = setInterval( function() {
+                            if (undefined !== window.enderecoGlobal.connection) {
+                                handleSelect(wunschSelector);
+                                clearInterval(interval)
+                            }
+                        }, 100);
+
+                    }
+                });
+            }
+        })();
+    </script>
 {/block}
 
